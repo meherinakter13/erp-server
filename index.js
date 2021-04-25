@@ -57,62 +57,179 @@ app.post('/login', (req, res) => {
   })
 })
 
+// ----------------orders----------------------
+// add all order----------------------------------------
+app.post('/addOrder', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const orderRecord = req.body
+    connection.query('INSERT INTO orders SET ?', orderRecord, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`user with the name ${[orderRecord.productName]} has been added`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// get all order -----------------------------------------------
+app.get('/order', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from orders', (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// get single user
+app.get('/order/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
 
-// // get all user ()
-// app.get('/user', (req, res) => {
-//   pool.getConnection((err, connection) => {
-//     if (err) throw err
-//     console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from orders WHERE id = ?', [req.params.id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
 
-//     connection.query('SELECT * from users', (err, rows) => {
-//       connection.release()
-//       if (!err) {
-//         res.send(rows)
-//       }
-//       else {
-//         console.log(err)
-//       }
-//     })
-//   })
-// })
+// Update single order -----------------------------------------
+app.put('/updateOrder', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const { id, orderDate, deliveryDate, measurement, color, quantity, totalAmount, productName } = req.body;
+    connection.query('UPDATE orders SET orderDate = ?, deliveryDate= ?, measurement = ?, color = ?, quantity = ?, totalAmount = ?, productName = ? WHERE id = ?', [id, orderDate, deliveryDate, measurement, color, quantity, totalAmount, productName], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`order with the name ${productName} has been updated`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// delete single order-----------------------------------------------
+app.delete('/order/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('DELETE from orders WHERE id = ?', [req.params.id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`order with the id ${[req.params.id]} has been removed`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+//                                ----------------suppliers----------------------
+// add all supplier----------------------------------------
+app.post('/addSupplier', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const supplierRecord = req.body
+    connection.query('INSERT INTO suppliers SET ?', supplierRecord, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`supplier with the name ${[supplierRecord.name]} has been added`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// get all supplier -----------------------------------------------
+app.get('/supplier', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from suppliers', (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// get single supplier
+app.get('/supplier/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from suppliers WHERE id = ?', [req.params.id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// Update single supplier -----------------------------------------
+app.put('/updateSupplier', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const { id, companyName, name, email, materialName, quantity, totalAmount, orderDate, deliveryDate } = req.body;
+    connection.query('UPDATE suppliers SET  companyName = ?, name = ?, email = ?, materialName = ?, quantity = ?, totalAmount = ?, orderDate = ?, deliveryDate= ? WHERE id = ?', [id, companyName, name, email, materialName, quantity, totalAmount, orderDate, deliveryDate ], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`supplier with the name ${productName} has been updated`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// delete single order-----------------------------------------------
+app.delete('/supplier/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('DELETE from suppliers WHERE id = ?', [req.params.id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`supplier with the id ${[req.params.id]} has been removed`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
 
-// // get single user
-// app.get('/user/:id', (req, res) => {
-//   pool.getConnection((err, connection) => {
-//     if (err) throw err
-//     console.log(`connected as id ${connection.threadId}`)
-
-//     connection.query('SELECT * from users WHERE id = ?', [req.params.id], (err, rows) => {
-//       connection.release()
-//       if (!err) {
-//         res.send(rows)
-//       }
-//       else {
-//         console.log(err)
-//       }
-//     })
-//   })
-// })
-
-// // Update single user
-// app.put('/updateUser', (req, res) => {
-//   pool.getConnection((err, connection) => {
-//     if (err) throw err
-//     console.log(`connected as id ${connection.threadId}`)
-
-//     const { id, name, email, password, designation, department } = req.body;
-//     connection.query('UPDATE users SET name = ?, email= ?, password = ?, designation = ?, department = ? WHERE id = ?', [id, name, email, password, designation, department], (err, rows) => {
-//       connection.release()
-//       if (!err) {
-//         res.send(`user with the name ${name} has been updated`)
-//       }
-//       else {
-//         console.log(err)
-//       }
-//     })
-//     console.log(req.body);
-//   })
-// })
 
 
 
