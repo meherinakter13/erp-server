@@ -2,22 +2,72 @@ const express = require('express')
 const mysql = require('mysql')
 const Define = require('./Define')
 const cors = require('cors')
+const fileUpload = require('express-fileupload');
 const app = express()
 
 app.use(cors())
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
+app.use(fileUpload());
 const port = process.env.PORT || 5000
 
 const pool = mysql.createPool({
   connectionLimit: 15,
   host: 'localhost',
   user: 'root',
-  password: '17203028',
+  password: '',
   database: 'erp-management'
 })
+// img upload
+app.post('/upload', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
 
+    // const image = req.files.file;
+    // const measurement = req.body.measurement;
+    // const fabric = req.body.fabric;
+    // console.log(file, measurement, fabric);
 
+    const {
+      measurement,
+      fabric,
+      img_url  }=req.body
+    
+   
+
+    connection.query('INSERT INTO samples SET ?', {
+      image:img_url,
+      fabric:fabric,
+      measurement:measurement
+    }, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`user with the name has been added`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// get all order -----------------------------------------------
+app.get('/sample', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from samples', (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
 // signup/create
 app.post('/addUser', (req, res) => {
   pool.getConnection((err, connection) => {
@@ -38,8 +88,6 @@ app.post('/addUser', (req, res) => {
     console.log(req.body);
   })
 })
-
-
 //login( email,password,department)
 app.post('/login', (req, res) => {
   const { email, password, department } = req.body
@@ -129,7 +177,7 @@ app.put('/updateOrder', (req, res) => {
   })
 })
 // delete single order-----------------------------------------------
-app.delete('/order/:id', (req, res) => {
+app.delete('/deleteOrder/:id', (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
@@ -214,7 +262,7 @@ app.put('/updateSupplier', (req, res) => {
   })
 })
 // delete single order-----------------------------------------------
-app.delete('/supplier/:id', (req, res) => {
+app.delete('/deleteSupplier/:id', (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
