@@ -18,56 +18,6 @@ const pool = mysql.createPool({
   password: '',
   database: 'erp-management'
 })
-// img upload
-app.post('/upload', (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err
-    console.log(`connected as id ${connection.threadId}`)
-
-    // const image = req.files.file;
-    // const measurement = req.body.measurement;
-    // const fabric = req.body.fabric;
-    // console.log(file, measurement, fabric);
-
-    const {
-      measurement,
-      fabric,
-      img_url  }=req.body
-    
-   
-
-    connection.query('INSERT INTO samples SET ?', {
-      image:img_url,
-      fabric:fabric,
-      measurement:measurement
-    }, (err, rows) => {
-      connection.release()
-      if (!err) {
-        res.send(`user with the name has been added`)
-      }
-      else {
-        console.log(err)
-      }
-    })
-    console.log(req.body);
-  })
-})
-// get all order -----------------------------------------------
-app.get('/sample', (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err
-    console.log(`connected as id ${connection.threadId}`)
-    connection.query('SELECT * from samples', (err, rows) => {
-      connection.release()
-      if (!err) {
-        res.send(rows)
-      }
-      else {
-        console.log(err)
-      }
-    })
-  })
-})
 // signup/create
 app.post('/addUser', (req, res) => {
   pool.getConnection((err, connection) => {
@@ -104,8 +54,67 @@ app.post('/login', (req, res) => {
     }
   })
 })
+// -----------------------------sample upload--------------------------------------
+app.post('/upload', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const {
+      measurement,
+      fabric,
+      img_url  }=req.body
+    
+    connection.query('INSERT INTO samples SET ?', {
+      image:img_url,
+      fabric:fabric,
+      measurement:measurement
+    }, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`sample with the name has been added`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// get all sample -----------------------------------------------
+app.get('/sample', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from samples', (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// delete sample----------------
+app.delete('/deleteSample/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('DELETE from samples WHERE id = ?', [req.params.id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`order with the id ${[req.params.id]} has been removed`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// update sample-----------------
 
-// ----------------orders----------------------
+// -----------------------------------------------orders-------------------------------------------------
 // add all order----------------------------------------
 app.post('/addOrder', (req, res) => {
   pool.getConnection((err, connection) => {
@@ -261,7 +270,7 @@ app.put('/updateSupplier', (req, res) => {
     console.log(req.body);
   })
 })
-// delete single order-----------------------------------------------
+// delete single supplier-----------------------------------------------
 app.delete('/deleteSupplier/:id', (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err
@@ -277,9 +286,255 @@ app.delete('/deleteSupplier/:id', (req, res) => {
     })
   })
 })
-
-
-
+// ---------------------------------------------final sample------------------------------------------------
+// add final sample image and measurement-------------------(sample)----------------------------------------
+app.post('/addFSampleImg', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const {
+      img_url, 
+      measurement }=req.body
+    
+    connection.query('INSERT INTO finalsample SET ?', {
+      image:img_url,
+      measurement:measurement
+   
+    }, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`sample with the name has been added`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// delete image and measurement
+app.delete('/deleteImg/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('DELETE from finalsample WHERE id = ?', [req.params.id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`sample with the id ${[req.params.id]} has been removed`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// get all sample image -----------------------------------------------
+app.get('/fSample', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from finalsample', (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// add sample time and cost --------------------------------(IE)---------------------------------
+app.post('/addFSampleTime', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    // const {
+    //   timing,
+    //   costing }=req.body
+      
+    connection.query('INSERT INTO ie SET ?', req.body, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`sample with the name has been added`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// get timing and costing----------------
+app.get('/timeCost', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from ie', (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// delete timing and costing
+app.delete('/deleteTimeCost/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('DELETE from ie WHERE id = ?', [req.params.id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`sample with the id ${[req.params.id]} has been removed`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// add sample qunatity of fabric------------------------------ (cad)---------------------------------
+app.post('/addFSampleqnty', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    // const {qnty_fabric,
+    // sample_id,
+    // production_id}=req.body
+    
+    connection.query('INSERT INTO cad SET ?',req.body, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`sample with the name has been added`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// get quantity of fabric----------------
+app.get('/qntyFab', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from cad', (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// deletequantity of fabric
+app.delete('/deleteQntyFab/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('DELETE from cad WHERE id = ?', [req.params.id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`sample with the id ${[req.params.id]} has been removed`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// ---------------------------------get all final sample result---------------------------------------
+app.get('/get_all_smaples', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query(`SELECT *
+    FROM finalsample
+    INNER JOIN ie
+    ON finalsample.id = ie.smaple_id
+    INNER JOIN cad
+    ON finalsample.id = cad.sample_id
+    ;`, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// ---------------------------------------------final product------------------------------------------------
+// add final sample image and measurement-------------------(production)----------------------------------------
+app.post('/addFProImg', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const {
+      img_url, 
+      productname,
+      measurement,
+      quantity,
+      color }=req.body
+    
+    connection.query('INSERT INTO finalproduction SET ?', {
+      image:img_url,
+      productname:productname,
+      quantity:quantity,
+      color:color,
+      measurement:measurement
+    }, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`Product with the name has been added`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// delete image and measurement
+app.delete('/deleteProImg/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('DELETE from finalproduction WHERE id = ?', [req.params.id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`Product with the id ${[req.params.id]} has been removed`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// get all product image -----------------------------------------------
+app.get('/fProduct', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from finalproduction', (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
