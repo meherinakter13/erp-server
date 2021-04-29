@@ -535,6 +535,70 @@ app.get('/fProduct', (req, res) => {
     })
   })
 })
+// add Product time and cost --------------------------------(IE)---------------------------------
+app.post('/addFProTime', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    // const {
+    //   timing,
+    //   costing }=req.body
+      
+    connection.query('INSERT INTO ie SET ?', req.body, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`sample with the name has been added`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// add product qunatity of fabric------------------------------ (cad)---------------------------------
+app.post('/addFProQnty', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    // const {qnty_fabric,
+    // sample_id,
+    // production_id}=req.body
+    
+    connection.query('INSERT INTO cad SET ?',req.body, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`product with the name has been added`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// ---------------------------------get all final product result---------------------------------------
+app.get('/get_all_products', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query(`SELECT *
+    FROM finalproduction
+    INNER JOIN ie
+    ON finalproduction.id = ie.production_id
+    INNER JOIN cad
+    ON finalproduction.id = cad.production_id
+    ;`, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
