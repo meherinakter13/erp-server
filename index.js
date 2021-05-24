@@ -236,15 +236,21 @@ app.delete('/deleteOrder/:id', (req, res) => {
   })
 })
 // add order status------------------------------ (marchandiser)---------------------------------
-app.post('/addStatus', (req, res) => {
+app.post('/addStatus/:id', (req, res) => {
+  const orderId = req.params.id;
   pool.getConnection((err, connection) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
-    // const {qnty_fabric,
-    // sample_id,
-    // production_id}=req.body
+  //   const {
+  //     confirm
+  //  }=req.body
     
-    connection.query('INSERT INTO orderstatus SET ?',req.body, (err, rows) => {
+    connection.query('INSERT INTO orderstatus SET ?',{
+      order_id: orderId,
+      status: "confirm"
+
+    }
+      , (err, rows) => {
       connection.release()
       if (!err) {
         res.send(`product with the name has been added`)
@@ -256,11 +262,11 @@ app.post('/addStatus', (req, res) => {
     console.log(req.body);
   })
 })
-app.get('/status', (req, res) => {
+app.get('/status/:id', (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
-    connection.query('SELECT * from orderstatus', (err, rows) => {
+    connection.query('SELECT * from orderstatus',[req.params.id], (err, rows) => {
       connection.release()
       if (!err) {
         res.send(rows)
@@ -570,7 +576,8 @@ app.get('/get_all_smaples/:id', (req, res) => {
 })
 // ---------------------------------------------final product------------------------------------------------
 // add final sample image and measurement-------------------(production)----------------------------------------
-app.post('/addFProImg', (req, res) => {
+app.post('/addFProImg/:id', (req, res) => {
+  const productId = req.params.id;
   pool.getConnection((err, connection) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
@@ -582,6 +589,7 @@ app.post('/addFProImg', (req, res) => {
       color }=req.body
     
     connection.query('INSERT INTO finalproduction SET ?', {
+      p_id: productId,
       image:img_url,
       productname:productname,
       quantity:quantity,
@@ -674,7 +682,8 @@ app.post('/addFProQnty', (req, res) => {
   })
 })
 // ---------------------------------get all final product result---------------------------------------
-app.get('/get_all_products', (req, res) => {
+app.get('/get_all_products/:id', (req, res) => {
+  const id = req.params.id;
   pool.getConnection((err, connection) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
@@ -684,7 +693,8 @@ app.get('/get_all_products', (req, res) => {
     ON finalproduction.id = ie.production_id
     INNER JOIN cad
     ON finalproduction.id = cad.production_id
-    ;`, (err, rows) => {
+    where finalproduction.p_id = ?
+    ;`,id, (err, rows) => {
       connection.release()
       if (!err) {
         res.send(rows)
