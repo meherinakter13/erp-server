@@ -235,25 +235,17 @@ app.delete('/deleteOrder/:id', (req, res) => {
     })
   })
 })
-// add order status------------------------------ (marchandiser)---------------------------------
-app.post('/addStatus/:id', (req, res) => {
-  const orderId = req.params.id;
+// update order status------------------------------ (marchandiser)---------------------------------
+
+app.put('/updateStatus/:id', (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
-  //   const {
-  //     confirm
-  //  }=req.body
-    
-    connection.query('INSERT INTO orderstatus SET ?',{
-      order_id: orderId,
-      status: "confirm"
-
-    }
-      , (err, rows) => {
+    const { id, status } = req.body;
+    connection.query('UPDATE orders SET  status = ? WHERE id = ?', [status, id], (err, rows) => {
       connection.release()
       if (!err) {
-        res.send(`product with the name has been added`)
+        res.send(`supplier with the name ${id} has been updated`)
       }
       else {
         console.log(err)
@@ -262,11 +254,13 @@ app.post('/addStatus/:id', (req, res) => {
     console.log(req.body);
   })
 })
-app.get('/status/:id', (req, res) => {
+// get only confirmed order 
+app.get('/ordersStatus', (req, res) => {
+
   pool.getConnection((err, connection) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
-    connection.query('SELECT * from orderstatus',[req.params.id], (err, rows) => {
+    connection.query(`SELECT * from orders where status = "Confirmed"`, (err, rows) => {
       connection.release()
       if (!err) {
         res.send(rows)
@@ -277,26 +271,7 @@ app.get('/status/:id', (req, res) => {
     })
   })
 })
-// ---------------------------------get all final product result---------------------------------------
-app.get('/get_all_orders', (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err
-    console.log(`connected as id ${connection.threadId}`)
-    connection.query(`SELECT *
-    FROM orders
-    INNER JOIN orderstatus
-    ON orders.id = orderstatus.order_id
-    ;`, (err, rows) => {
-      connection.release()
-      if (!err) {
-        res.send(rows)
-      }
-      else {
-        console.log(err)
-      }
-    })
-  })
-})
+
 
 //                                ----------------suppliers----------------------
 // add all supplier----------------------------------------
@@ -355,10 +330,10 @@ app.put('/updateSupplier', (req, res) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
     const { id, companyName, name, email, materialName, quantity, totalAmount, orderDate, deliveryDate } = req.body;
-    connection.query('UPDATE suppliers SET  companyName = ?, name = ?, email = ?, materialName = ?, quantity = ?, totalAmount = ?, orderDate = ?, deliveryDate= ? WHERE id = ?', [id, companyName, name, email, materialName, quantity, totalAmount, orderDate, deliveryDate ], (err, rows) => {
+    connection.query('UPDATE suppliers SET  companyName = ?, name = ?, email = ?, materialName = ?, quantity = ?, totalAmount = ?, orderDate = ?, deliveryDate= ? WHERE id = ?', [companyName, name, email, materialName, quantity, totalAmount, orderDate, deliveryDate, id], (err, rows) => {
       connection.release()
       if (!err) {
-        res.send(`supplier with the name ${productName} has been updated`)
+        res.send(`supplier with the name ${materialName} has been updated`)
       }
       else {
         console.log(err)
@@ -403,6 +378,24 @@ app.post('/addFSampleImg/:id', (req, res) => {
       connection.release()
       if (!err) {
         res.send(`sample with the name has been added`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// update Final sample image 
+app.put('/updateFSampleImg/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const { id, image, measurement} = req.body;
+    connection.query('UPDATE finalsample SET  image= ?, measurement= ? WHERE id = ?', [image, measurement, id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`Sample with the name ${id} has been updated`)
       }
       else {
         console.log(err)
