@@ -96,12 +96,14 @@ app.post('/upload', (req, res) => {
     const {
       measurement,
       fabric,
-      img_url  }=req.body
+      img_url,
+      email  }=req.body
     
     connection.query('INSERT INTO samples SET ?', {
       image:img_url,
       fabric:fabric,
-      measurement:measurement
+      measurement:measurement,
+      email:email
     }, (err, rows) => {
       connection.release()
       if (!err) {
@@ -130,6 +132,22 @@ app.get('/sample', (req, res) => {
     })
   })
 })
+// buyer get sample
+app.get('/samples', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from samples WHERE email = ?', [req.query.email], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
 // delete sample----------------
 app.delete('/deleteSample/:id', (req, res) => {
   pool.getConnection((err, connection) => {
@@ -146,8 +164,44 @@ app.delete('/deleteSample/:id', (req, res) => {
     })
   })
 })
-// update sample-----------------
+// get single sample
+app.get('/sample/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
 
+    connection.query('SELECT * from samples WHERE id = ?', [req.params.id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// update Feedback-----------------
+app.put('/updatefeedback/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const id =req.params.id;
+    const {feedback}  = req.body;
+    console.log("new",feedback,id);
+
+    connection.query('UPDATE samples SET feedback = ? WHERE id = ?', [feedback, id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`Samples with the name ${id} has been updated`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    // console.log(req.body);
+  })
+})
 // -----------------------------------------------orders-------------------------------------------------
 // add all order----------------------------------------
 app.post('/addOrder', (req, res) => {
@@ -183,6 +237,22 @@ app.get('/order', (req, res) => {
     })
   })
 })
+// buyer get order
+app.get('/orders', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from orders WHERE email = ?', [req.query.email], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
 // get single order
 app.get('/order/:id', (req, res) => {
   pool.getConnection((err, connection) => {
@@ -201,24 +271,7 @@ app.get('/order/:id', (req, res) => {
   })
 })
 
-// Update single order -----------------------------------------
-app.put('/updateOrder', (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err
-    console.log(`connected as id ${connection.threadId}`)
-    const { id, orderDate, deliveryDate, measurement, color, quantity, totalAmount, productName } = req.body;
-    connection.query('UPDATE orders SET orderDate = ?, deliveryDate= ?, measurement = ?, color = ?, quantity = ?, totalAmount = ?, productName = ? WHERE id = ?', [id, orderDate, deliveryDate, measurement, color, quantity, totalAmount, productName], (err, rows) => {
-      connection.release()
-      if (!err) {
-        res.send(`order with the name ${productName} has been updated`)
-      }
-      else {
-        console.log(err)
-      }
-    })
-    console.log(req.body);
-  })
-})
+
 // delete single order-----------------------------------------------
 app.delete('/deleteOrder/:id', (req, res) => {
   pool.getConnection((err, connection) => {
@@ -228,6 +281,40 @@ app.delete('/deleteOrder/:id', (req, res) => {
       connection.release()
       if (!err) {
         res.send(`order with the id ${[req.params.id]} has been removed`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// add payment info----------
+app.post('/addPayment/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const paymentRecord = req.body
+    connection.query('INSERT INTO payment SET ?', paymentRecord, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`user with the name ${[paymentRecord.id]} has been added`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// marchandiser get order payment status
+app.get('/orderStatusBuy', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query(`SELECT * from orders WHERE status = "Confirmed" and email = ?`, [req.query.email] , (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
       }
       else {
         console.log(err)
@@ -252,6 +339,62 @@ app.put('/updateStatus/:id', (req, res) => {
       }
     })
     console.log(req.body);
+  })
+})
+// paid-------------
+app.put('/updatePayment/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const { id, payment_status } = req.body;
+    connection.query('UPDATE orders SET  payment_status = ? WHERE id = ?', [payment_status, id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`supplier with the name ${id} has been updated`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
+// marchandiser get order payment status
+// app.get('/orderStatusPay', (req, res) => {
+//   pool.getConnection((err, connection) => {
+//     if (err) throw err
+//     console.log(`connected as id ${connection.threadId}`)
+//     connection.query(`SELECT * from orders WHERE status = "Confirmed" and payment_status = "Recieved" `, (err, rows) => {
+//       connection.release()
+//       if (!err) {
+//         res.send(rows)
+//       }
+//       else {
+//         console.log(err)
+//       }
+//     })
+//   })
+// })
+app.get('/get_all_Payment', (req, res) => {
+  // const id=req.params.id
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query(`SELECT *
+    FROM orders
+    INNER JOIN payment
+    ON orders.id = payment.order_id
+   where status = "Confirmed" and payment_status = "Recieved"
+
+    ;`, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
   })
 })
 // get only confirmed order 
@@ -325,12 +468,15 @@ app.get('/supplier/:id', (req, res) => {
   })
 })
 // Update single supplier -----------------------------------------
-app.put('/updateSupplier', (req, res) => {
+app.put('/updateSupplier/:id', (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
-    const { id, companyName, name, email, materialName, quantity, totalAmount, orderDate, deliveryDate } = req.body;
-    connection.query('UPDATE suppliers SET  companyName = ?, name = ?, email = ?, materialName = ?, quantity = ?, totalAmount = ?, orderDate = ?, deliveryDate= ? WHERE id = ?', [companyName, name, email, materialName, quantity, totalAmount, orderDate, deliveryDate, id], (err, rows) => {
+    const id = req.params.id;
+    const {companyName, name, email, materialName, quantity, totalAmount, orderDate, deliveryDate } = req.body;
+    console.log("new",companyName,id);
+    
+    connection.query('UPDATE suppliers SET companyName = ?, name = ?, email = ?, materialName = ?, quantity = ?, totalAmount = ?, orderDate = ?, deliveryDate= ? WHERE id = ?', [companyName, name, email, materialName, quantity, totalAmount, orderDate, deliveryDate, id], (err, rows) => {
       connection.release()
       if (!err) {
         res.send(`supplier with the name ${materialName} has been updated`)
@@ -367,12 +513,14 @@ app.post('/addFSampleImg/:id', (req, res) => {
     console.log(`connected as id ${connection.threadId}`)
     const {
       img_url, 
-      measurement }=req.body
+      measurement,
+      feedbackk }=req.body;
     
     connection.query('INSERT INTO finalsample SET ?', {
       s_id: sampleId,
       image:img_url,
-      measurement:measurement
+      measurement:measurement,
+      feedbackk:feedbackk
    
     }, (err, rows) => {
       connection.release()
@@ -391,7 +539,8 @@ app.put('/updateFSampleImg/:id', (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
-    const { id, image, measurement} = req.body;
+    const id = req.params.id;
+    const {image, measurement} = req.body;
     connection.query('UPDATE finalsample SET  image= ?, measurement= ? WHERE id = ?', [image, measurement, id], (err, rows) => {
       connection.release()
       if (!err) {
@@ -426,6 +575,22 @@ app.get('/fSample', (req, res) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
     connection.query('SELECT * from finalsample', (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// get all sample image -----------------------------------------------
+app.get('/fSamples/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from finalsample WHERE id = ?', [req.params.id], (err, rows) => {
       connection.release()
       if (!err) {
         res.send(rows)
@@ -473,6 +638,21 @@ app.get('/timeCost', (req, res) => {
     })
   })
 })
+app.get('/timeCost/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from ie WHERE id = ?',[req.params.id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
 // delete timing and costing
 app.delete('/deleteTimeCost/:id', (req, res) => {
   pool.getConnection((err, connection) => {
@@ -487,6 +667,29 @@ app.delete('/deleteTimeCost/:id', (req, res) => {
         console.log(err)
       }
     })
+  })
+})
+// Update single sample time-----------------------------------------
+app.put('/updateSaTime/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const id = req.params.id;
+   const {
+      timing,
+      costing }=req.body;
+    console.log("new",timing,id);
+  
+    connection.query('UPDATE ie SET timing = ?,costing=?  WHERE id = ?', [timing,costing, id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`supplier with the name ${timing} has been updated`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
   })
 })
 // add sample qunatity of fabric------------------------------ (cad)---------------------------------
@@ -526,6 +729,24 @@ app.get('/qntyFab', (req, res) => {
     })
   })
 })
+// get quantity of fabric----------------
+app.get('/qntyFab/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from cad WHERE id = ?',[req.params.id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+
+
 // deletequantity of fabric
 app.delete('/deleteQntyFab/:id', (req, res) => {
   pool.getConnection((err, connection) => {
@@ -540,6 +761,28 @@ app.delete('/deleteQntyFab/:id', (req, res) => {
         console.log(err)
       }
     })
+  })
+})
+// Update single sample qnty-----------------------------------------
+app.put('/updateSaQnty/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const id = req.params.id;
+     const {qnty_fabric
+   }=req.body
+    console.log("new",qnty_fabric,id);
+    
+    connection.query('UPDATE cad SET qnty_fabric = ? WHERE id = ?', [qnty_fabric, id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`supplier with the name ${qnty_fabric} has been updated`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
   })
 })
 // ---------------------------------get all final sample result---------------------------------------
@@ -557,6 +800,77 @@ app.get('/get_all_smaples/:id', (req, res) => {
     where finalsample.s_id=?
 
     ;`,id, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+
+app.get('/get_all_smaple_img', (req, res) => {
+  // const id=req.params.id
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query(`SELECT finalsample.id,finalsample.image,finalsample.measurement
+    FROM finalsample
+    INNER JOIN ie
+    ON finalsample.id = ie.smaple_id
+    INNER JOIN cad
+    ON finalsample.id = cad.sample_id
+    ;`, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+
+//only for timecost
+app.get('/get_all_smaple_tc', (req, res) => {
+  // const id=req.params.id
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query(`SELECT ie.id,ie.timing,ie.costing
+    FROM finalsample
+    INNER JOIN ie
+    ON finalsample.id = ie.smaple_id
+    INNER JOIN cad
+    ON finalsample.id = cad.sample_id
+    ;`, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+
+//only for cad
+app.get('/get_all_smaple', (req, res) => {
+  // const id=req.params.id
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query(`SELECT *
+    FROM finalsample
+    INNER JOIN ie
+    ON finalsample.id = ie.smaple_id
+    INNER JOIN cad
+    ON finalsample.id = cad.sample_id
+    ;`, (err, rows) => {
       connection.release()
       if (!err) {
         res.send(rows)
@@ -632,6 +946,41 @@ app.get('/fProduct', (req, res) => {
     })
   })
 })
+// get single product image -----------------------------------------------
+app.get('/fProducts/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from finalproduction WHERE id = ?', [req.params.id],(err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// update Final product image 
+app.put('/updateFProductImg/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const id = req.params.id;
+    const {image, measurement, color, quantity,productname} = req.body;
+    connection.query('UPDATE finalproduction SET  image= ?, measurement= ?, color=?, quantity=?, productname=? WHERE id = ?', [image, measurement,color, quantity, productname, id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`Sample with the name ${id} has been updated`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    console.log(req.body);
+  })
+})
 // add Product time and cost --------------------------------(IE)---------------------------------
 app.post('/addFProTime', (req, res) => {
   pool.getConnection((err, connection) => {
@@ -688,6 +1037,72 @@ app.get('/get_all_products/:id', (req, res) => {
     ON finalproduction.id = cad.production_id
     where finalproduction.p_id = ?
     ;`,id, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+app.get('/get_all_product', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query(`SELECT *
+    FROM finalproduction
+    INNER JOIN ie
+    ON finalproduction.id = ie.production_id
+    INNER JOIN cad
+    ON finalproduction.id = cad.production_id
+    ;`, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+
+app.get('/get_all_product_img', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query(`SELECT finalproduction.id,finalproduction.image,finalproduction.measurement,finalproduction.color,finalproduction.quantity,finalproduction.productname
+    FROM finalproduction
+    INNER JOIN ie
+    ON finalproduction.id = ie.production_id
+    INNER JOIN cad
+    ON finalproduction.id = cad.production_id
+    ;`, (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+
+
+app.get('/get_all_product_tc', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query(`SELECT ie.id,ie.timing,ie.costing
+    FROM finalproduction
+    INNER JOIN ie
+    ON finalproduction.id = ie.production_id
+    INNER JOIN cad
+    ON finalproduction.id = cad.production_id
+    ;`, (err, rows) => {
       connection.release()
       if (!err) {
         res.send(rows)
