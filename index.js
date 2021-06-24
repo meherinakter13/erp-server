@@ -38,6 +38,22 @@ app.post('/addUser', (req, res) => {
     console.log(req.body);
   })
 })
+// get all sample -----------------------------------------------
+app.get('/users', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    connection.query('SELECT * from users', (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
 // get user/buyer--------------------------
 
 app.get('/buyers', (req, res) => {
@@ -56,7 +72,45 @@ app.get('/buyers', (req, res) => {
     })
   })
 })
-// delete sample----------------
+// get single buyer
+app.get('/buyer/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+
+    connection.query('SELECT * from users WHERE id = ?', [req.params.id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(rows)
+      }
+      else {
+        console.log(err)
+      }
+    })
+  })
+})
+// update buyer-----------------
+app.put('/updatebuyer/:id', (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err
+    console.log(`connected as id ${connection.threadId}`)
+    const id =req.params.id;
+    const {name,designation,department,email,password}  = req.body;
+    console.log("new",department,id);
+
+    connection.query('UPDATE users SET name = ?, designation = ?, department = ?, email = ?, password = ? WHERE id = ?', [name,designation,department,email,password, id], (err, rows) => {
+      connection.release()
+      if (!err) {
+        res.send(`Buyer with the name ${id} has been updated`)
+      }
+      else {
+        console.log(err)
+      }
+    })
+    // console.log(req.body);
+  })
+})
+// delete buyer----------------
 app.delete('/deleteBuyer/:id', (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err
