@@ -38,7 +38,23 @@ app.post('/addUser', (req, res) => {
     console.log(req.body);
   })
 })
-// get all sample -----------------------------------------------
+//login( email,password,department)
+app.post('/login', (req, res) => {
+  const { email, password, department } = req.body
+  const sql = `select * from users where email=? and password = ? and department = ?`
+  pool.query(sql, [email, password, department], (err, results) => {
+    if (err) {
+      res.send({ error: true, msg: 'user login failed' })
+    } else {
+      if (results[0]) {
+        res.send({ error: false, msg: 'user login success', data: results[0] })
+      } else {
+        res.send({ error: true, msg: 'user login failed' })
+      }
+    }
+  })
+})
+// get all user -----------------------------------------------
 app.get('/users', (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err
@@ -126,22 +142,7 @@ app.delete('/deleteBuyer/:id', (req, res) => {
     })
   })
 })
-//login( email,password,department)
-app.post('/login', (req, res) => {
-  const { email, password, department } = req.body
-  const sql = `select * from users where email=? and password = ? and department = ?`
-  pool.query(sql, [email, password, department], (err, results) => {
-    if (err) {
-      res.send({ error: true, msg: 'user login failed' })
-    } else {
-      if (results[0]) {
-        res.send({ error: false, msg: 'user login success', data: results[0] })
-      } else {
-        res.send({ error: true, msg: 'user login failed' })
-      }
-    }
-  })
-})
+
 // -----------------------------sample upload--------------------------------------
 app.post('/upload', (req, res) => {
   pool.getConnection((err, connection) => {
@@ -840,6 +841,42 @@ app.put('/updateSaQnty/:id', (req, res) => {
   })
 })
 // ---------------------------------get all final sample result---------------------------------------
+//fjfjfj/check-img/ie/29
+//fjdkfjd/check-img/cad/29
+app.get('/check-imgie/:id',(req,res)=>{
+  const id=req.params.id
+  // const table=req.params.table
+  pool.query(`SELECT * FROM ie WHERE smaple_id=${id}`,(err,results)=>{
+    if(err){
+      res.send("some error"+err.message)
+    }else{
+      if(results.length>0){
+        res.send({added:true})
+      }else{
+        res.send({added:false})
+      }
+    }
+  })
+})
+//fjdkfjd/check-img/cad/29
+app.get('/check-imgcad/:id',(req,res)=>{
+  const id=req.params.id
+  // const table=req.params.table
+  pool.query(`SELECT * FROM cad WHERE sample_id=${id}`,(err,results)=>{
+    if(err){
+      res.send("some error"+err.message)
+    }else{
+      if(results.length>0){
+        res.send({added:true})
+      }else{
+        res.send({added:false})
+      }
+    }
+  })
+})
+
+
+
 app.get('/get_all_smaples/:id', (req, res) => {
   const id=req.params.id
   pool.getConnection((err, connection) => {
@@ -870,7 +907,7 @@ app.get('/get_all_smaple_img', (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
-    connection.query(`SELECT finalsample.id,finalsample.image,finalsample.measurement
+    connection.query(`SELECT finalsample.id,finalsample.s_id,finalsample.image,finalsample.measurement
     FROM finalsample
     INNER JOIN ie
     ON finalsample.id = ie.smaple_id
@@ -1078,6 +1115,25 @@ app.post('/addFProQnty', (req, res) => {
   })
 })
 // ---------------------------------get all final product result---------------------------------------
+
+//fjfjfj/check-img/ie/29
+//fjdkfjd/check-img/cad/29
+app.get('/check-img/:table/:id',(req,res)=>{
+  const id=req.params.id
+  const table=req.params.table
+  pool.query(`SELECT * FROM ${table} WHERE production_id=${id}`,(err,results)=>{
+    if(err){
+      res.send("some error"+err.message)
+    }else{
+      if(results.length>0){
+        res.send({added:true})
+      }else{
+        res.send({added:false})
+      }
+    }
+  })
+})
+
 app.get('/get_all_products/:id', (req, res) => {
   const id = req.params.id;
   pool.getConnection((err, connection) => {
@@ -1127,7 +1183,7 @@ app.get('/get_all_product_img', (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err
     console.log(`connected as id ${connection.threadId}`)
-    connection.query(`SELECT finalproduction.id,finalproduction.image,finalproduction.measurement,finalproduction.color,finalproduction.quantity,finalproduction.productname
+    connection.query(`SELECT finalproduction.id,finalproduction.p_id,finalproduction.image,finalproduction.measurement,finalproduction.color,finalproduction.quantity,finalproduction.productname
     FROM finalproduction
     INNER JOIN ie
     ON finalproduction.id = ie.production_id
